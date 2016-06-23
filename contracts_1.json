@@ -1,0 +1,24 @@
+{
+    "contracts" : [
+        {
+            "underlying" : "NIFTY",
+            "underlying_price" : 8220.0,
+            "position" : "Buy",
+            "volume" : 75, 
+            "strike_price" : 8200,
+            "type" : "Call",
+            "expiration_date" : "28-Jun-2016",
+            "price" : 100.0
+        },
+        {
+            "underlying" : "NIFTY",
+            "underlying_price" : 8220.0,
+            "position" : "Sell",
+            "volume" : 75, 
+            "strike_price" : 8300,
+            "type" : "Call",
+            "expiration_date" : "28-Jun-2016",
+            "price" : 50.0
+        }
+    ]    
+}

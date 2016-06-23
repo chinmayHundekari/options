@@ -1,5 +1,5 @@
 import json, sys, getopt
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 keys = {"underlying" : type(u""),
             "underlying_price" : type(1.0),
@@ -15,12 +15,12 @@ def plot_graph(xy_ticks, breakeven, breakodd):
     print(xy_ticks, breakeven, breakodd)
     xvals = [tick[0] for tick in xy_ticks]
     yvals = [tick[1] for tick in xy_ticks]
-#    plt.plot(xvals, yvals)
-#    plt.axhline(0, color='black')
-#    xvals = xvals +  be + bo
-#    plt.xticks(xvals, rotation=45)
-#    plt.grid(b=True, which='major', color='g', linestyle='--')
-#    plt.show()
+    plt.plot(xvals, yvals)
+    plt.axhline(0, color='black')
+    xvals = xvals + breakeven + breakodd
+    plt.xticks(xvals, rotation=45)
+    plt.grid(b=True, which='major', color='g', linestyle='--')
+    plt.show()
 
 def validate_json_file(inputfile):
     try:
@@ -57,9 +57,18 @@ def get_x_ticks(ifile):
             min_val = contract['strike_price']
         if(contract['strike_price'] > max_val):
             max_val = contract['strike_price']
-
-    x_ticks.append(min_val * 0.9)
-    x_ticks.append(max_val * 1.1)
+    if(min_val<10):
+        x_ticks.append(min_val - 1)
+        x_ticks.append(max_val + 1)
+    elif(min_val<100):
+        x_ticks.append(min_val - 5)
+        x_ticks.append(max_val + 5)
+    elif(min_val<1000):
+        x_ticks.append(min_val - 50)
+        x_ticks.append(max_val + 50)
+    elif(min_val<10000):
+        x_ticks.append(min_val - 100)
+        x_ticks.append(max_val + 100)
     return x_ticks
 
 def processContract(contract, i):
@@ -118,7 +127,7 @@ def convert_json_file(ifile):
     return xy_ticks, breakeven, breakodd                
 
 def main(argv):
-    inputfile = ''
+    inputfile = 'contracts.json'
     outputfile = ''
     try:
         opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
