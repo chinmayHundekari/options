@@ -18,12 +18,13 @@
             "strike_price" : 8300,
             "type" : "Call",
             "expiration_date" : "28-Jun-2016",
-            "price" : 100.0
+            "price" : 50.0
         },
         {
             "underlying" : "NIFTY",
             "underlying_price" : 8220.0,
             "position" : "Sell",
+            "strike_price" : 8300,
             "volume" : 75, 
             "type" : "Future",
             "expiration_date" : "28-Jun-2016"
