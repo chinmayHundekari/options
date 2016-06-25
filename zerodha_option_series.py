@@ -103,7 +103,10 @@ def getDictForSeries(cur, Underlying, Expiry, Strike, Type):
     df = pd.DataFrame(x)
     df = df.drop([0,1,2,3], 1)
     df.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
-    df['Time'] = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M:%S')
+    if(Type=='FUT'):
+        df['Time'] = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M')
+    else:
+        df['Time'] = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M:%S')
     df = df.set_index('Time')
     dic = {'Underlying' : Underlying, 'Expiry' : exp, 'Strike' : Strike, 'Type' : Type, 'Data' : df}
     return dic
