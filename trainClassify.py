@@ -1,3 +1,5 @@
+from sklearn.externals.six import StringIO  
+import pydot 
 import pandas as pd
 from matplotlib import style
 import numpy as np
@@ -36,30 +38,35 @@ def main(argv):
     df.dropna(inplace=True)
     df.to_csv('calc.csv')
     df['label'] = df[forecast_col]
+    df = df.drop([forecast_col], 1)
 
     X = np.array(df.drop(['label'],1))
     #X = preprocessing.scale(X)
     df.dropna(inplace=True)
     y = np.array(df['label'])
     samples = len(X)
-
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.02)
+    
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
     
     train_filename = datetime.datetime.now().strftime('%Y-%m-d %H:%M:%S') + '.pkl'
-    clf = tree.DecisionTreeClassifier()
+
+    clf = tree.DecisionTreeClassifier(min_samples_split=100, max_depth=3)
     clf.fit(X_train, y_train)
 #    joblib.dump(clf, train_filename)
     #clf = joblib.load(train_filename) 
     accuracy = clf.score(X_test, y_test)
     print(accuracy)
     y_forecast = clf.predict(X_test)
-    print np.vstack((y_test,y_forecast))
+    #print np.vstack((y_test,y_forecast))
     
     
-    plt.plot(np.arange(len(y_forecast)),y_forecast, 'r-')
-    plt.plot(np.arange(len(y_forecast)), y_test, 'b')
-    plt.show()
-
+#    plt.plot(np.arange(len(y_forecast)),y_forecast, 'r-')
+#    plt.plot(np.arange(len(y_forecast)), y_test, 'b')
+#    plt.show()
+    dot_data = StringIO() 
+    tree.export_graphviz(clf, out_file=dot_data) 
+    graph = pydot.graph_from_dot_data(dot_data.getvalue()) 
+    graph.write_pdf('a.pdf') 
 #    plt.plot(x['Data']['2016-05-24']['Close'])
 #    plt.show()
     db.closeDB(conn)
