@@ -11,7 +11,7 @@ keys = {"underlying" : type(u""),
             "price" : type(1.0)}
 future_optional_keys = [u"price"]
 
-def plot_graph(xy_ticks, breakeven, breakodd):
+def plot_pl_graph_at_close(xy_ticks, breakeven, breakodd):
     print(xy_ticks, breakeven, breakodd)
     xvals = [tick[0] for tick in xy_ticks]
     yvals = [tick[1] for tick in xy_ticks]
@@ -150,7 +150,7 @@ def main(argv):
         print ('Invalid json file as input')
         return -1
     if(xy_ticks):
-        plot_graph(xy_ticks, breakeven, breakodd)
+        plot_pl_graph_at_close(xy_ticks, breakeven, breakodd)
     else:
         print ('Unable to create a graph. Sorry!')
         return -1
