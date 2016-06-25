@@ -2,8 +2,8 @@ import pandas as pd
 from glob import glob
 import sqlite3
 import sys, argparse, os
-import csv, re, datetime
-
+import csv, re, datetime, time
+import matplotlib.pyplot as plt
 def monthToNum(shortMonth):
     return{
         'JAN' : 1,
@@ -22,29 +22,29 @@ def monthToNum(shortMonth):
 
 
 def initDB(db_file):
-#    if(os.path.isfile(db_file)):
-#        conn = sqlite3.connect(db_file)
-#    else:
-    try:
+   if(os.path.isfile(db_file)):
         conn = sqlite3.connect(db_file)
-        c = conn.cursor()
-        c.execute('CREATE TABLE option_quotes ( \
-            Underlying varchar(20), \
-            Expiry datetime,    \
-            Strike DECIMAL(6,2),    \
-            Type varchar(3) NOT NULL CHECK(Type="CE" OR Type="PE" or Type="FUT"),   \
-            QTime datetime, \
-            Open DECIMAL(5,2) NOT NULL, \
-            High DECIMAL(5,2) NOT NULL, \
-            Low DECIMAL(5,2) NOT NULL,  \
-            Close DECIMAL(5,2) NOT NULL,    \
-            Volume INTEGER NOT NULL,    \
-            PRIMARY KEY (Underlying, Expiry, Strike, Type, QTime) \
-            )')
-    except: # OperationalError as e:
-        print "Somebody Help! Table exists!!"
-        conn = sqlite3.connect(db_file)
-    return conn
+   else:
+        try:
+            conn = sqlite3.connect(db_file)
+            c = conn.cursor()
+            c.execute('CREATE TABLE option_quotes ( \
+                Underlying varchar(20), \
+                Expiry datetime,    \
+                Strike DECIMAL(6,2),    \
+                Type varchar(3) NOT NULL CHECK(Type="CE" OR Type="PE" or Type="FUT"),   \
+                QTime datetime, \
+                Open DECIMAL(5,2) NOT NULL, \
+                High DECIMAL(5,2) NOT NULL, \
+                Low DECIMAL(5,2) NOT NULL,  \
+                Close DECIMAL(5,2) NOT NULL,    \
+                Volume INTEGER NOT NULL,    \
+                PRIMARY KEY (Underlying, Expiry, Strike, Type, QTime) \
+                )')
+        except: # OperationalError as e:
+            print "Somebody Help! Table exists!!"
+            conn = sqlite3.connect(db_file)
+   return conn
 
 def closeDB(conn):
     conn.commit()
@@ -80,6 +80,33 @@ def storeFile(series, cur):
         except sqlite3.IntegrityError as e:
             print ('Data exists for file ' + series + '\n' + e.message)
 
+def getValuesAtTime(cur, Underlying, Expiry, Qtime):
+    e = Expiry.strftime('%Y-%m-%d %H:%M:%S')
+    qt = Qtime.strftime('%d-%m-%Y %H:%M:%S')
+    try:
+        cur.execute('SELECT * FROM option_quotes WHERE Underlying=? AND Expiry=? AND QTime=?', (Underlying, e, qt))
+    except sqlite3.IntegrityError as e:
+        print(e.message)
+    return cur.fetchall()
+
+def getValuesForSeries(cur, Underlying, Expiry, Strike, Type):
+    e = Expiry.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        cur.execute('SELECT * FROM option_quotes WHERE Underlying=? AND Expiry=? AND STRIKE=? AND Type=?', (Underlying, e, Strike, Type))
+    except sqlite3.IntegrityError as e:
+        print(e.message)
+    return cur.fetchall()
+
+def getDictForSeries(cur, Underlying, Expiry, Strike, Type):
+    x = getValuesForSeries(cur, Underlying, Expiry, Strike, Type)
+    exp = datetime.datetime.strptime(x[0][1], '%Y-%m-%d %H:%M:%S')
+    df = pd.DataFrame(x)
+    df = df.drop([0,1,2,3], 1)
+    df.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
+    df['Time'] = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M:%S')
+    df = df.set_index('Time')
+    dic = {'Underlying' : Underlying, 'Expiry' : exp, 'Strike' : Strike, 'Type' : Type, 'Data' : df}
+    return dic
 
 def main(argv):
     input_glob = ''
@@ -90,8 +117,15 @@ def main(argv):
 
     conn = initDB(args.database)
     cur = conn.cursor()
-    for in_file in args.input_glob:
-        storeFile(in_file, cur)
+    #for in_file in args.input_glob:
+    #    storeFile(in_file, cur)
+#    x = getValuesAtTime(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30) , datetime.datetime(2016,6,24,12,30,0) )
+#    x = getValuesForSeries(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30), 7800, 'CE' )
+    x = getDictForSeries(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30), 7800, 'CE' )
+#    print x['Data'].dtypes
+#    print x['Data']['2016-05-24']
+    plt.plot(x['Data']['2016-05-24']['Close'])
+    plt.show()
     closeDB(conn)
     return 1
 
