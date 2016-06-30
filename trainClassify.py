@@ -26,17 +26,17 @@ def main(argv):
 
     x = db.getDictForSeries(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30), 0, 'FUT' )
     df = x['Data']
-    df['PCT_MVMT_1MIN'] = (df['Close'] - df['Close'].shift(+1)) / df['Close'].shift(+1) * 10000
-    df['PCT_MVMT_5MIN_POST'] = (df['Close'].shift(-5) - df['Close']) / df['Close'] * 10000
-    df['PCT_MVMT_2MIN'] = (df['Close'] - df['Close'].shift(2)) / df['Close'].shift(2) * 10000
-    df['PCT_MVMT_5MIN'] = (df['Close'] - df['Close'].shift(5)) / df['Close'].shift(5) * 10000
-    df['BUY'] = (df['PCT_MVMT_5MIN_POST'] > 5) * 2 + (df['PCT_MVMT_5MIN_POST'] < -5) * 1 + 0 
+    df['PCT_MVMT_1MIN'] = (df['Close'] - df['Close'].shift(+1)) / df['Close'].shift(+1) * 100
+    df['PCT_MVMT_5MIN_POST'] = (df['Close'].shift(-20) - df['Close']) / df['Close'] * 100
+    df['PCT_MVMT_2MIN'] = (df['Close'] - df['Close'].shift(2)) / df['Close'].shift(2) * 100
+    df['PCT_MVMT_5MIN'] = (df['Close'] - df['Close'].shift(5)) / df['Close'].shift(5) * 100
+    df['BUY'] = (df['PCT_MVMT_5MIN_POST'] > 1) * 2 + (df['PCT_MVMT_5MIN_POST'] < -1) * 1 + 0 
     df['STD_DEV'] = pd.Series.rolling(df['Close'], 14, min_periods=14, center=False).std()
     df['BOL_HIGH'] = (df['STD_DEV'] * 2) + pd.Series.rolling(df['Close'], 14, min_periods=14, center=False).mean()
     df['BOL_LOW'] = (df['STD_DEV'] * -2) + pd.Series.rolling(df['Close'], 14, min_periods=14, center=False).mean()
     df['PCT_BOL'] = (df['Close'] - df['BOL_LOW'])/(df['BOL_HIGH'] - df['BOL_LOW'])
-    df['STO_HIGH'] = pd.Series.rolling(df['High'], 14, min_periods=14, center=False).max()
-    df['STO_LOW'] = pd.Series.rolling(df['Low'], 14, min_periods=14, center=False).min()
+    df['STO_HIGH'] = pd.Series.rolling(df['High'], 20, min_periods=20, center=False).max()
+    df['STO_LOW'] = pd.Series.rolling(df['Low'], 20, min_periods=20, center=False).min()
     df['STOCH'] = (df['Close'] - df['STO_LOW'])/(df['STO_HIGH'] - df['STO_LOW'])
     df = df[['BUY', 'PCT_MVMT_1MIN' ,'PCT_MVMT_2MIN', 'PCT_MVMT_5MIN', 'PCT_BOL', 'STOCH']]
     #df = df[['BUY', 'PCT_BOL']]
@@ -49,7 +49,7 @@ def main(argv):
     df = df.drop([forecast_col], 1)
 
     X = np.array(df.drop(['label'],1))
-    #X = preprocessing.scale(X)
+    X = preprocessing.scale(X)
     y = np.array(df['label'])
     samples = len(X)
     df.to_csv('calc.csv')
