@@ -7,7 +7,7 @@ import math
 from scipy.stats import norm
 
 
-class Option:
+class OptionGreeks:
     def __init__(self, k, s, rf, t, vol=0.1):
         self.k = float(k)
         self.s = float(s)
@@ -57,10 +57,10 @@ class Option:
         IV = 500.0
         for i in xrange(1, 1000):
             if callorput == 'C':
-                optPrice = Option(self.k, self.s, self.rf,
+                optPrice = OptionGreeks(self.k, self.s, self.rf,
                                   self.t, IV/1000.0).get_call()
             else:
-                optPrice = Option(self.k, self.s, self.rf,
+                optPrice = OptionGreeks(self.k, self.s, self.rf,
                                   self.t, IV/1000.0).get_put()
             if optPrice > price:
                 upper = IV
