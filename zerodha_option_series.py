@@ -30,10 +30,10 @@ def initDB(db_file):
             c = conn.cursor()
             c.execute('CREATE TABLE option_quotes ( \
                 Underlying varchar(20), \
-                Expiry datetime,    \
+                Expiry varchar(20),    \
                 Strike DECIMAL(6,2),    \
                 Type varchar(3) NOT NULL CHECK(Type="CE" OR Type="PE" or Type="FUT"),   \
-                QTime datetime, \
+                QTime varchar(20), \
                 Open DECIMAL(5,2) NOT NULL, \
                 High DECIMAL(5,2) NOT NULL, \
                 Low DECIMAL(5,2) NOT NULL,  \
@@ -108,6 +108,7 @@ def getDictForSeries(cur, Underlying, Expiry, Strike, Type):
     else:
         df['Time'] = pd.to_datetime(df['Time'], format='%d-%m-%Y %H:%M:%S')
     df = df.set_index('Time')
+    df = df.sort_index(axis=0)
     dic = {'Underlying' : Underlying, 'Expiry' : exp, 'Strike' : Strike, 'Type' : Type, 'Data' : df}
     return dic
 
@@ -120,14 +121,14 @@ def main(argv):
 
     conn = initDB(args.database)
     cur = conn.cursor()
-    #for in_file in args.input_glob:
-    #    storeFile(in_file, cur)
+#    for in_file in args.input_glob:
+#        storeFile(in_file, cur)
 #    x = getValuesAtTime(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30) , datetime.datetime(2016,6,24,12,30,0) )
 #    x = getValuesForSeries(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30), 7800, 'CE' )
     x = getDictForSeries(cur, 'NIFTY', datetime.datetime(2016,6,28, 15, 30), 7800, 'CE' )
 #    print x['Data'].dtypes
 #    print x['Data']['2016-05-24']
-    plt.plot(x['Data']['2016-05-24']['Close'])
+    plt.plot(x['Data']['Close'])
     plt.show()
     closeDB(conn)
     return 1
